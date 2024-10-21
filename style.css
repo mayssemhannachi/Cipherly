@@ -25,11 +25,11 @@ h1, h2, h3 ,p, div ,button {
     display: flex;
     justify-content: center; /* Centers the title horizontally */
     align-items: center; /* Centers the title vertically */
-    margin-top: -20px;
+    margin-top: -15px;
 }
 
 #rectangle {
-    background:transparent;
+    background:#f8f9fa;
     padding:0.5rem 0.5rem;
     margin:0 0.5rem;
     font-size:1rem;

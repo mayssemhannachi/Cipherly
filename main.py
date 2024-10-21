@@ -1,5 +1,12 @@
 import streamlit as st
 
+st.set_page_config(page_title="Cipherly" , page_icon="🔐", layout="wide", initial_sidebar_state="auto", menu_items={
+        'Get Help': 'https://www.extremelycoolapp.com/help',
+        'Report a bug': "https://www.extremelycoolapp.com/bug",
+        'About': "# This is a header. This is an *extremely* cool app!"
+    })
+
+
 # Read the CSS file
 with open("style.css") as f:
     css = f.read()
@@ -7,8 +14,16 @@ with open("style.css") as f:
 # Apply the custom style
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
+# Sidebar for user role selection
+st.sidebar.header("Who are you?")
+user_role = st.sidebar.radio("", ("Regular User", "Admin"))
 
-
+st.markdown(
+    '<div style="position: fixed; top: 20px; left: 20px;">'
+    '<img src="https://example.com/arrow.png" alt="Expand Sidebar" style="width: 30px; height: 30px;">'
+    '</div>',
+    unsafe_allow_html=True
+)
 
 st.markdown('<div class="centered-text"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
 st.markdown('<div class="centered-text"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
@@ -16,7 +31,7 @@ st.markdown('<div class="centered-text"><p>Are you ready to unlock the secrets o
 st.markdown('''
 <div class="button-container">
     <button id="rectangle">
-        <img src="/Users/macbookair/Documents/ISAMM/sem5/Sec BD/final-project/stickers/caesar.png" alt="Caesar Cipher">
+        <img src="https://raw.githubusercontent.com/mayssemhannachi/Cipherly/master/stickers/caesar.png" alt="Caesar Cipher" style="width: 100px; height: 100px;">        
         Caesar Cipher 
         <br>
         Step into the ancient world of Julius 
@@ -35,7 +50,7 @@ st.markdown('''
         Can you crack the code?
     </button>
     <button id="rectangle">
-        <img src=".stickers/security.png" alt="EAS Encryption">
+        <img src="https://raw.githubusercontent.com/mayssemhannachi/Cipherly/master/stickers/security.png" alt="EAS Encryption" style="width: 100px; height: 100px;">        
         EAS Encryption 
         <br>
         Enter the world of modern encryption 
