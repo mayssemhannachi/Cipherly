@@ -18,13 +18,14 @@ st.markdown(
 )
 
 # Sidebar for user role selection
-user_role = st.sidebar.radio("Who are you?", ("Regular User", "Admin"))
+st.sidebar.title("Who are you?")
+user_role = st.sidebar.radio("Please Choose to get full experience ", ("Regular User", "Admin"))
 
 
 
 st.markdown('<div class="centered-text" style="position: relative; top: -180px; left: 50px;"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
 st.markdown('<div class="centered-text" style="position: relative; top: -140px; left: 50px;"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
-st.markdown('<div class="centered-text" style="position: relative; top: -100px; left: 50px;"><p>Are you ready to unlock the secrets of encryption? CipherPlay is your interactive playground where you can explore two exciting encryption techniques—Caesar Cipher and EAS Encryption. Whether you’re just curious about how data is protected or looking to experiment with encryption and decryption yourself, CipherPlay has you covered.\n With a simple and intuitive interface, you’ll be transforming ordinary text into cryptic codes in no time!</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-text" style="position: relative; top: -100px; left: 50px;"><p>Are you ready to unlock the secrets of encryption? Cipherly is your interactive playground where you can explore two exciting encryption techniques—Caesar Cipher and EAS Encryption. Whether you’re just curious about how data is protected or looking to experiment with encryption and decryption yourself, CipherPlay has you covered.\n With a simple and intuitive interface, you’ll be transforming ordinary text into cryptic codes in no time!</p></div>', unsafe_allow_html=True)
 st.markdown('''
 <div class="button-container"style="position: relative; top: -50px; left: 50px;">
     <button id="rectangle">
