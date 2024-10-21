@@ -71,3 +71,7 @@ button.lined.thick{
     height: 50px; /* Adjust the size of the image */
     margin-bottom: 10px; /* Adjust the space between image and text */
 }
+
+.flip-horizontal {
+    transform: scaleX(-1);
+}

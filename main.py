@@ -1,10 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="Cipherly" , page_icon="🔐", layout="wide", initial_sidebar_state="auto", menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
-    })
+st.set_page_config(page_title="Cipherly" , page_icon="🔐", layout="wide", initial_sidebar_state="collapsed", menu_items=None)
 
 
 # Read the CSS file
@@ -14,22 +10,23 @@ with open("style.css") as f:
 # Apply the custom style
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
-# Sidebar for user role selection
-st.sidebar.header("Who are you?")
-user_role = st.sidebar.radio("", ("Regular User", "Admin"))
-
 st.markdown(
-    '<div style="position: fixed; top: 20px; left: 20px;">'
-    '<img src="https://example.com/arrow.png" alt="Expand Sidebar" style="width: 30px; height: 30px;">'
+    '<div style="position: relative; top: 10px; left: 50px;">'
+    '<img src="https://raw.githubusercontent.com/mayssemhannachi/Cipherly/master/stickers/arrow.png" alt="Expand Sidebar" style="width: 200px; height: 200px;transform: scaleX(-1);">'
     '</div>',
     unsafe_allow_html=True
 )
 
-st.markdown('<div class="centered-text"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
-st.markdown('<div class="centered-text"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
-st.markdown('<div class="centered-text"><p>Are you ready to unlock the secrets of encryption? CipherPlay is your interactive playground where you can explore two exciting encryption techniques—Caesar Cipher and EAS Encryption. Whether you’re just curious about how data is protected or looking to experiment with encryption and decryption yourself, CipherPlay has you covered.\n With a simple and intuitive interface, you’ll be transforming ordinary text into cryptic codes in no time!</p></div>', unsafe_allow_html=True)
+# Sidebar for user role selection
+user_role = st.sidebar.radio("Who are you?", ("Regular User", "Admin"))
+
+
+
+st.markdown('<div class="centered-text" style="position: relative; top: -180px; left: 50px;"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-text" style="position: relative; top: -140px; left: 50px;"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-text" style="position: relative; top: -100px; left: 50px;"><p>Are you ready to unlock the secrets of encryption? CipherPlay is your interactive playground where you can explore two exciting encryption techniques—Caesar Cipher and EAS Encryption. Whether you’re just curious about how data is protected or looking to experiment with encryption and decryption yourself, CipherPlay has you covered.\n With a simple and intuitive interface, you’ll be transforming ordinary text into cryptic codes in no time!</p></div>', unsafe_allow_html=True)
 st.markdown('''
-<div class="button-container">
+<div class="button-container"style="position: relative; top: -50px; left: 50px;">
     <button id="rectangle">
         <img src="https://raw.githubusercontent.com/mayssemhannachi/Cipherly/master/stickers/caesar.png" alt="Caesar Cipher" style="width: 100px; height: 100px;">        
         Caesar Cipher 
