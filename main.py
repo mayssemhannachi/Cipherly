@@ -19,8 +19,7 @@ st.markdown(
 
 # Sidebar for user role selection
 st.sidebar.title("Who are you?")
-user_role = st.sidebar.radio("Please Choose to get full experience ", ("Regular User", "Admin"))
-
+user_role = st.sidebar.radio("Who are you?", ("Regular User", "Admin"), index=0)
 
 
 st.markdown('<div class="centered-text" style="position: relative; top: -180px; left: 50px;"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
