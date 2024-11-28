@@ -1,7 +1,9 @@
 import streamlit as st
 import re
+import sqlite3
 from captcha.image import ImageCaptcha
 import random, string
+
 def navigate_to(page):
     st.session_state.page = page
     print(f"Navigate to {page}")
@@ -14,6 +16,16 @@ height = 150
 
 def generate_captcha():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length_captcha))
+
+def insert_user(name, surname, email, password, role="Regular User"):
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO users (name, surname, email, password, role, is_active, login_attempts)
+        VALUES (?, ?, ?, ?, ?, 1, 0)
+    ''', (name, surname, email, password, role))
+    conn.commit()
+    conn.close()
 
 def show_sign_up_page():
     st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h1>Sign up</h1></div>', unsafe_allow_html=True)
@@ -72,8 +84,6 @@ def show_sign_up_page():
 
         submitted = st.form_submit_button("Submit")
 
-        
-
         # Password complexity validation
         if password:
             complexity = "Simple"
@@ -118,15 +128,16 @@ def show_sign_up_page():
             elif not captcha_text:
                 st.error("Please enter the captcha code.")
             elif st.session_state['Captcha'] != captcha_text:
-                print(st.session_state['Captcha'])
-                print(captcha_text)
                 st.error("The captcha code is incorrect, please try again.")
                 del st.session_state['Captcha']
             else:
+                # Insert user into the database
+                insert_user(name, surname, email, password)
+                st.session_state.user_name = name  # Store the user's name in the session state
+                st.session_state.logged_in = True  # Set the login status
                 st.success(f"Welcome, {name}! Your account has been created.")
-                st.info("Please check your email for a verification link.")
                 del st.session_state['Captcha']
-                st.stop()
+                
     
     st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h6>Already have an account? </h6></div>', unsafe_allow_html=True)
     st.markdown("""
@@ -148,3 +159,7 @@ def show_sign_up_page():
     st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
     if st.button("Log In", key="log_in_button"):
             navigate_to("log_in")
+
+    
+
+   
