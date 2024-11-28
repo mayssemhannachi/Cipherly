@@ -1,9 +1,9 @@
-@font-face {
+/*@font-face {
     font-family: 'Virgil';
     src: url('https://raw.githubusercontent.com/mayssemhannachi/Songs_Analysis_Streamlit/main/Virgil.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
-}
+}*/
 
 html, body, [class*="css"] {
     font-family: 'Virgil', sans-serif; /* Use your custom font */
@@ -74,4 +74,20 @@ button.lined.thick{
 
 .flip-horizontal {
     transform: scaleX(-1);
+}
+
+.auth-container button {
+    background: transparent;
+    padding: 0.5rem 0.5rem;
+    margin: 0 0.5rem;
+    font-size: 1rem;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
+    border-bottom-right-radius: 225px 15px;
+    border-bottom-left-radius: 15px 255px;
+    pointer-events: auto; /* Make the button unclickable */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width:8rem;
 }
