@@ -1,5 +1,9 @@
 import streamlit as st
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
 
 st.set_page_config(page_title="Cipherly", page_icon="🔐", layout="wide", initial_sidebar_state="collapsed", menu_items=None)
 
@@ -24,8 +28,27 @@ def navigate_to(page):
     print(f"Navigate to {page}")
     st.rerun()  # Force app to rerun and reflect the change immediately
 
-# Render the current page
-if st.session_state.page == "home":
+# Admin login function
+def admin_login():
+    st.markdown('<div class="centered-text" style="position: relative; top: -180px; left: 50px;"><h1>Admin Login</h1></div>', unsafe_allow_html=True)
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        admin_username = os.getenv("ADMIN_USERNAME")
+        print(admin_username)
+        print(os.getenv("ADMIN_PASSWORD"))
+        print(username)
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        if username == admin_username and password == admin_password:
+            st.session_state.page = "admin_panel"
+            st.rerun()
+        else:
+            st.error("Invalid credentials")
+
+# Render the current page based on user role
+if user_role == "Admin":
+    admin_login()
+elif st.session_state.page == "home" and user_role == "Regular User":
 
     st.markdown(
         '<div style="position: relative; top: 10px; left: 50px;">'
@@ -37,8 +60,6 @@ if st.session_state.page == "home":
     st.markdown('<div class="centered-text" style="position: relative; top: -180px; left: 50px;"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
     st.markdown('<div class="centered-text" style="position: relative; top: -140px; left: 50px;"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
     st.markdown('<div class="centered-text" style="position: relative; top: -100px; left: 50px;"><p>Are you ready to unlock the secrets of encryption? Cipherly is your interactive playground where you can explore two exciting encryption techniques—Caesar Cipher and EAS Encryption. Whether you’re just curious about how data is protected or looking to experiment with encryption and decryption yourself, CipherPlay has you covered.\n With a simple and intuitive interface, you’ll be transforming ordinary text into cryptic codes in no time!</p></div>', unsafe_allow_html=True)
-
-  
 
     st.markdown("""
     <style>.element-container:has(#button-after) + div button {
@@ -59,15 +80,14 @@ if st.session_state.page == "home":
     st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
 
     # Use columns for side-by-side buttons
-    col1, col2,col3,col4 = st.columns([2, 1,1,2])
+    col1, col2, col3, col4 = st.columns([2, 1, 1, 2])
 
-    # Add Python-based navigation for "Sign Up"
+    # Add Python-based navigation for "Log In"
     with col2:
         if st.button("Log In", key="log_in_button"):
             navigate_to("log_in")
 
     st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
-
 
     # Add Python-based navigation for "Sign Up"
     with col3:
@@ -154,4 +174,7 @@ elif st.session_state.page == "log_in":
     # Import Log In Page
     import log_in
     log_in.show_log_in_page()
-
+elif st.session_state.page == "admin_panel":
+    # Import Admin Panel Page
+    import admin_panel
+    admin_panel.show_admin_panel_page()
