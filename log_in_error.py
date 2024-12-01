@@ -3,6 +3,8 @@ import re
 import sqlite3
 from captcha.image import ImageCaptcha
 import random, string
+from add_guest_to_db import handle_guest_action
+
 
 def navigate_to(page):
     st.session_state.page = page
@@ -28,7 +30,9 @@ def increment_login_attempts(email):
     conn.commit()
     conn.close()
 
-def show_log_in_page():
+def show_log_in_error_page():
+    handle_guest_action()
+    st.warning("You need to log in to access the Caesar Cipher. Please log in first.")
     st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h1>Log In</h1></div>', unsafe_allow_html=True)
 
     st.markdown("""
@@ -88,10 +92,6 @@ def show_log_in_page():
         submitted = st.form_submit_button("Submit")
 
         if submitted:
-            # Store the old CAPTCHA and input before regenerating
-            st.session_state['old_captcha'] = st.session_state['Captcha']
-            st.session_state['old_captcha_input'] = captcha_text
-
             # Input validation
             if not email:
                 st.error("Please enter your email.")
@@ -102,47 +102,51 @@ def show_log_in_page():
             elif not captcha_text:
                 st.error("Please enter the captcha code.")
             elif st.session_state['Captcha'] != captcha_text:
-                # Generate a new CAPTCHA and rerun the app
-                st.session_state['Captcha'] = generate_captcha()
-                st.rerun()
-            else: 
-                if st.session_state['Captcha'] == captcha_text:
-                    # Process successful login
-                    st.success("Captcha verified. Proceeding with login...")
-                    # Check credentials from the database
-                    conn = sqlite3.connect('users.db')
-                    cursor = conn.cursor()
-                    cursor.execute('''
-                        SELECT name, password, is_active FROM users
-                        WHERE email = ?
-                    ''', (email,))
-                    result = cursor.fetchone()
-                    conn.close()
+                print(st.session_state['Captcha'])
+                print(captcha_text)
+                st.error("The captcha code is incorrect, please try again.")
+                del st.session_state['Captcha']
 
-                    if result and result[1] == password:
-                        if result[2] == 1:  # Check if the user is active
-                            increment_login_attempts(email)
-                            st.session_state.user_name = result[0]  # Store the user's name in the session state
-                            st.session_state.logged_in = True  # Set the login status
-                            st.success(f"Welcome, {result[0]}!")
-                            del st.session_state['Captcha']
-                            navigate_to("encryption")
-                        else:
-                            st.error("Your account is inactive. Please contact support.")
+            else:
+                # Check credentials from the database
+                conn = sqlite3.connect('users.db')
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT name, password, is_active FROM users
+                    WHERE email = ?
+                ''', (email,))
+                result = cursor.fetchone()
+                conn.close()
+
+                if result and result[1] == password:
+                    if result[2] == 1:  # Check if the user is active
+                        increment_login_attempts(email)
+                        st.session_state.user_name = result[0]  # Store user's name
+                        st.session_state.user_email = result[1]  # Store user's email
+                        st.session_state.logged_in = True  # Set the login status
+                        st.success(f"Welcome, {result[0]}!")
+                        del st.session_state['Captcha']
+                        navigate_to("caesar_cipher")
                     else:
-                        st.error("Invalid credentials.")
-
+                        st.error("Your account is inactive. Please contact support.")
+                else:
+                    st.error("Invalid credentials.")
+    
+    # Use columns for side-by-side buttons
+    col1, col2, col3, col4 = st.columns([2, 1, 1, 2])
+    
+    with col2:
+        st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h6>Do not have an account? </h6></div>', unsafe_allow_html=True)
+        
     
 
-    # Display error if the previous CAPTCHA attempt was incorrect
-    if (
-        st.session_state.get('old_captcha') 
-        and st.session_state.get('old_captcha_input') != st.session_state['old_captcha']
-        ):
-        st.error(f"The entered CAPTCHA code was incorrect. Please try again.")
-                
+    with col3:
+        st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h6>Read more? </h6></div>', unsafe_allow_html=True)
+        
     
-    st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h6>Do not have an account? </h6></div>', unsafe_allow_html=True)
+    # Spacer to visually separate rows (optional)
+    st.markdown('<div style="margin-bottom: -40px;"></div>', unsafe_allow_html=True)
+
     st.markdown("""
     <style>.element-container:has(#button-after) + div button {
     position: relative;
@@ -155,10 +159,21 @@ def show_log_in_page():
     border-bottom-left-radius: 15px 255px;
     pointer-events: auto; /* Make the button unclickable */
     width:8rem;
-    left:600px;
-    top:-40px
+    left:60px;
+    top:-60px
     }</style>""", unsafe_allow_html=True)
 
     st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
-    if st.button("Sign up", key="sign_up_button"):
+
+    # Use columns for side-by-side buttons
+    col1, col2, col3, col4 = st.columns([2, 1, 1, 2])
+
+    with col2:
+        if st.button("Sign up", key="sign_up_button"):
             navigate_to("sign_up")
+    
+    with col3:    
+        if st.button("Home", key="home_button"):
+            navigate_to("home")
+
+

@@ -1,4 +1,7 @@
 import streamlit as st
+import streamlit.components.v1 as components
+
+
 # Read the CSS file
 with open("style.css") as f:
     css = f.read()
@@ -13,9 +16,25 @@ def navigate_to(page):
     st.rerun()  # Force app to rerun and reflect the change immediately
 
 def encryption_show():
-    st.markdown('<div class="centered-text" style="position: relative; top: -60px; left: 50px;"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
-    st.markdown('<div class="centered-text" style="position: relative; top: -30px; left: 30px;"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
-    st.markdown('<div class="centered-text" style="position: relative; top: 50px; left: 50px;"><p>Are you ready to unlock the secrets of encryption? Cipherly is your interactive playground where you can explore two exciting encryption techniques—Caesar Cipher and AES Encryption. Whether you’re just curious about how data is protected or looking to experiment with encryption and decryption yourself, CipherPlay has you covered.\n With a simple and intuitive interface, you’ll be transforming ordinary text into cryptic codes in no time!</p></div>', unsafe_allow_html=True)
+    user_name = st.session_state.get('user_name', 'User')
+    st.success(f"Welcome, {user_name}! Your account has been created.")
+    # Inject JavaScript to hide the success message after 5 seconds
+    hide_message_js = """
+    <script>
+    setTimeout(function() {
+        var successMessage = document.querySelector('.stAlert');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000);  // Hide after 5 seconds
+    </script>
+    """
+    components.html(hide_message_js)
+
+
+    st.markdown('<div class="centered-text" style="position: relative; top: -30px; left: 50px;"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
+    st.markdown('<div class="centered-text" style="position: relative; top: -20px; left: 30px;"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
+    st.markdown('<div class="centered-text" style="position: relative; top: 60px; left: 50px;"><p>Are you ready to unlock the secrets of encryption? Cipherly is your interactive playground where you can explore two exciting encryption techniques—Caesar Cipher and EAS Encryption. Whether you’re just curious about how data is protected or looking to experiment with encryption and decryption yourself, CipherPlay has you covered.\n With a simple and intuitive interface, you’ll be transforming ordinary text into cryptic codes in no time!</p></div>', unsafe_allow_html=True)
 
     # Navigation buttons
     col5, col6 = st.columns([1, 1])

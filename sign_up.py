@@ -80,7 +80,12 @@ def show_sign_up_page():
         image = ImageCaptcha(width=width, height=height)
         data = image.generate(st.session_state['Captcha'])
         st.image(data)
-        captcha_text = st.text_input('Enter captcha text')
+        
+        # Initialize captcha_text in session state if not already present
+        if 'captcha_text' not in st.session_state:
+            st.session_state.captcha_text = ''
+        
+        captcha_text = st.text_input('Enter captcha text', value=st.session_state.captcha_text)
 
         submitted = st.form_submit_button("Submit")
 
@@ -106,6 +111,10 @@ def show_sign_up_page():
                     suggestions.append("Add more character types (uppercase, lowercase, numbers, symbols) to make it stronger.")
 
         if submitted:
+            # Store the old CAPTCHA and input before regenerating
+            st.session_state['old_captcha'] = st.session_state['Captcha']
+            st.session_state['old_captcha_input'] = captcha_text
+
             # Input validation
             if not name:
                 st.error("Name is required.")
@@ -128,16 +137,27 @@ def show_sign_up_page():
             elif not captcha_text:
                 st.error("Please enter the captcha code.")
             elif st.session_state['Captcha'] != captcha_text:
-                st.error("The captcha code is incorrect, please try again.")
-                del st.session_state['Captcha']
+                # Generate a new CAPTCHA and rerun the app
+                st.session_state['Captcha'] = generate_captcha()
+                st.rerun()
             else:
-                # Insert user into the database
-                insert_user(name, surname, email, password)
-                st.session_state.user_name = name  # Store the user's name in the session state
-                st.session_state.logged_in = True  # Set the login status
-                st.success(f"Welcome, {name}! Your account has been created.")
-                del st.session_state['Captcha']
+                if st.session_state['Captcha'] == captcha_text:
+                    # Process successful login
+                    st.success("Captcha verified. Proceeding with login...")
+                    # Insert user into the database
+                    insert_user(name, surname, email, password)
+                    st.session_state.user_name = name  # Store the user's name in the session state
+                    st.session_state.logged_in = True  # Set the login status
+                    st.success(f"Welcome, {name}! Your account has been created.")
+                    navigate_to("sign_up_success")
+                    del st.session_state['Captcha']
                 
+    # Display error if the previous CAPTCHA attempt was incorrect
+    if (
+        st.session_state.get('old_captcha') 
+        and st.session_state.get('old_captcha_input') != st.session_state['old_captcha']
+        ):
+        st.error(f"The entered CAPTCHA code was incorrect. Please try again.")            
     
     st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h6>Already have an account? </h6></div>', unsafe_allow_html=True)
     st.markdown("""
@@ -159,7 +179,3 @@ def show_sign_up_page():
     st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
     if st.button("Log In", key="log_in_button"):
             navigate_to("log_in")
-
-    
-
-   
