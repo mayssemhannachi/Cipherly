@@ -3,7 +3,7 @@ import re
 import sqlite3
 from captcha.image import ImageCaptcha
 import random, string
-
+import time
 def navigate_to(page):
     st.session_state.page = page
     print(f"Navigate to {page}")
@@ -108,7 +108,7 @@ def show_log_in_page():
             else: 
                 if st.session_state['Captcha'] == captcha_text:
                     # Process successful login
-                    st.success("Captcha verified. Proceeding with login...")
+                    
                     # Check credentials from the database
                     conn = sqlite3.connect('users.db')
                     cursor = conn.cursor()
@@ -124,9 +124,8 @@ def show_log_in_page():
                             increment_login_attempts(email)
                             st.session_state.user_name = result[0]  # Store the user's name in the session state
                             st.session_state.logged_in = True  # Set the login status
-                            st.success(f"Welcome, {result[0]}!")
                             del st.session_state['Captcha']
-                            navigate_to("encryption")
+                            navigate_to("login_success")
                         else:
                             st.error("Your account is inactive. Please contact support.")
                     else:
@@ -140,6 +139,7 @@ def show_log_in_page():
         and st.session_state.get('old_captcha_input') != st.session_state['old_captcha']
         ):
         st.error(f"The entered CAPTCHA code was incorrect. Please try again.")
+
                 
     
     st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h6>Do not have an account? </h6></div>', unsafe_allow_html=True)

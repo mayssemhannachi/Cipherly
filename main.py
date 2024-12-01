@@ -235,7 +235,7 @@ elif st.session_state.page == "log_in_error_aes":
 elif st.session_state.page == "sign_up_success":
     import sign_up_success
     sign_up_success.encryption_show()
-elif st.session_state.page == "log_in_success":
+elif st.session_state.page == "login_success":
     import login_success
     login_success.encryption_show()
 
