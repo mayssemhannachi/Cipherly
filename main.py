@@ -21,17 +21,55 @@ if "page" not in st.session_state:
 
 # Admin login function
 def admin_login():
-    st.markdown('<div class="centered-text" style="position: relative; top: -180px; left: 50px;"><h1>Admin Login</h1></div>', unsafe_allow_html=True)
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        admin_username = os.getenv("ADMIN_USERNAME")
-        admin_password = os.getenv("ADMIN_PASSWORD")
-        if username == admin_username and password == admin_password:
-            st.session_state.page = "admin_panel"
-            st.rerun()
-        else:
-            st.error("Invalid credentials")
+    st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h1>Admin Log In</h1></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    /* Custom styling for the form submit button */
+    .element-container:has(#form-id-after) + div button {
+        background: transparent;
+        padding: 0.5rem 0.5rem;
+        font-size: 2rem;
+        border-top-left-radius: 255px 15px;
+        border-top-right-radius: 15px 225px;
+        border-bottom-right-radius: 225px 15px;
+        border-bottom-left-radius: 15px 255px;
+        pointer-events: auto;
+        width: 8rem;
+    }
+
+    /* Optional: Styling for the form container */
+    .element-container:has(#form-id-after) + div {
+        position: relative;
+        background: transparent;
+        padding: 1.5rem 1.5rem;
+        font-size: 2rem;
+        border-color: black;
+        border-top-left-radius: 255px 15px;
+        border-top-right-radius: 15px 225px;
+        border-bottom-right-radius: 225px 15px;
+        border-bottom-left-radius: 15px 255px;
+        width: 40rem;
+        top: 0px;
+        left: 320px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Marker for the form
+    st.markdown('<span id="form-id-after"></span>', unsafe_allow_html=True)
+
+    with st.form(key="admin_login_form"):
+        username = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Login")
+        if submitted:
+            admin_email = os.getenv("ADMIN_EMAIL")
+            admin_password = os.getenv("ADMIN_PASSWORD")
+            if username == admin_email and password == admin_password:
+                st.session_state.page = "admin_panel"
+                st.rerun()
+            else:
+                st.error("Invalid credentials")
 
 # Function to show the main page
 def show_main_page():
@@ -227,8 +265,8 @@ elif st.session_state.page == "log_in_error":
     import log_in_error
     log_in_error.show_log_in_error_page()
 elif st.session_state.page == "key_vault":
-    import keyvault
-    keyvault.show_key_vault()
+    import keyvaultui
+    keyvaultui.show_key_vault()
 elif st.session_state.page == "log_in_error_aes":
     import log_in_error_aes
     log_in_error_aes.show_log_in_error_aes_page()

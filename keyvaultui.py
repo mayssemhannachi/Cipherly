@@ -1,5 +1,5 @@
 import streamlit as st
-from keyvault import add_secret, get_secrets
+from keyvault import store_key_in_vault, retrieve_key_from_vault
 
 def show_key_vault():
     # Ensure the user is logged in
@@ -13,7 +13,7 @@ def show_key_vault():
 
     # Display user secrets
     st.markdown("#### Your Secrets:")
-    secrets = get_secrets(user_email)
+    secrets = store_key_in_vault(user_email)
     if secrets:
         for secret_name, secret_value, created_at in secrets:
             st.write(f"- **{secret_name}**: {secret_value} (Added on {created_at})")
@@ -31,6 +31,6 @@ def show_key_vault():
             if not secret_name or not secret_value:
                 st.error("Both fields are required.")
             else:
-                add_secret(user_email, secret_name, secret_value)
+                retrieve_key_from_vault(user_email, secret_name, secret_value)
                 st.success(f"Secret '{secret_name}' added successfully!")
                 st.rerun()

@@ -122,4 +122,4 @@ def encryption_show():
                     navigate_to('eas_encryption')
 
     if st.button("Go to Key Vault"):
-            navigate_to("key_vault")
+            navigate_to("keyvaultUI")

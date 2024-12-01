@@ -1,44 +1,24 @@
 import sqlite3
+from datetime import datetime
 
-# Connect to the database
-def get_db_connection():
-    return sqlite3.connect('users.db')
-
-# Create the key_vault table
-def setup_key_vault():
-    conn = get_db_connection()
+# Store Key in Key Vault
+def store_key_in_vault(secret_name, key, owner_id):
+    conn = sqlite3.connect("your_database.db")
     cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS key_vault (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_email TEXT NOT NULL,
-            secret_name TEXT NOT NULL,
-            secret_value TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+    cursor.execute("""
+        INSERT INTO key_vault (secret_name, secret_value, owner_id, created_at)
+        VALUES (?, ?, ?, ?)
+    """, (secret_name, key.hex(), owner_id, datetime.now()))
     conn.commit()
     conn.close()
 
-# Add a secret
-def add_secret(user_email, secret_name, secret_value):
-    conn = get_db_connection()
+# Retrieve Key from Vault
+def retrieve_key_from_vault(secret_id):
+    conn = sqlite3.connect("your_database.db")
     cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO key_vault (user_email, secret_name, secret_value)
-        VALUES (?, ?, ?)
-    ''', (user_email, secret_name, secret_value))
-    conn.commit()
+    cursor.execute("""
+        SELECT secret_value FROM key_vault WHERE id = ?
+    """, (secret_id,))
+    result = cursor.fetchone()
     conn.close()
-
-# Retrieve secrets for a user
-def get_secrets(user_email):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT secret_name, secret_value, created_at FROM key_vault
-        WHERE user_email = ?
-    ''', (user_email,))
-    secrets = cursor.fetchall()
-    conn.close()
-    return secrets
+    return bytes.fromhex(result[0]) if result else None
