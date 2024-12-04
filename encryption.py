@@ -1,18 +1,9 @@
 import streamlit as st
+import pandas as pd
+import os
+from utils import navigate_to, add_acl, check_permission, get_user_id_by_username, log_activity
 
-# Read the CSS file
-with open("style.css") as f:
-    css = f.read()
-
-# Apply the custom style
-st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
-
-# Function to navigate to a different page
-def navigate_to(page):
-    st.session_state.page = page
-    print(f"Navigate to {page}")
-    st.rerun()  # Force app to rerun and reflect the change immediately
-
+# Function to show the encryption page
 def encryption_show():
     st.markdown('<div class="centered-text" style="position: relative; top: -10px; left: 50px;"><h1>Cipherly 🔐✨</h1></div>', unsafe_allow_html=True)
     st.markdown('<div class="centered-text" style="position: relative; top: -5px; left: 30px;"><h3>The encryption app that you need</h3></div>', unsafe_allow_html=True)
@@ -122,8 +113,6 @@ def encryption_show():
                 
                     navigate_to('eas_encryption')
 
-
-    
     # Spacer to visually separate rows (optional)
     st.markdown('<div style="margin-bottom: 0px;"></div>', unsafe_allow_html=True)
     col1,col2,col3=st.columns([2,1,2])
@@ -146,7 +135,32 @@ def encryption_show():
         st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
         if st.button("Go to Key Vault"):
             navigate_to("key_vault")
+
     
+
+    # Informational message
+    st.subheader("Learn More About Caesar and AES Encryption")
+    st.write("Choose a document to download and learn more about the encryption algorithms.")
+
+    # List available documents
+    documents = os.listdir("documents")
+    document_name = st.selectbox("Select a document to download", documents)
+
+    # Download document
+    download_button = st.button("Download Document")
+
+    if download_button:
+        if document_name:
+            user_name = st.session_state.get('user_name', 'guest')
+            user_id = get_user_id_by_username(user_name)
+            if check_permission(user_id, document_name, "download"):
+                with open(f"documents/{document_name}", "rb") as f:
+                    st.download_button(label="Download", data=f, file_name=document_name)
+                log_activity(user_id, user_name, f"Downloaded document: {document_name}")
+            else:
+                st.error("You do not have permission to download this document.")
+        else:
+            st.error("Please select a document.")
 
 # Call the function to render the encryption page
 if __name__ == "__main__":

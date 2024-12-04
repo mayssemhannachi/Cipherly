@@ -1,6 +1,7 @@
 import streamlit as st
 import sqlite3
 from datetime import datetime
+import os
 
 
 # Function to navigate to a different page
@@ -89,3 +90,56 @@ def get_user_name_by_email(email):
     user_name = cursor.fetchone()
     conn.close()
     return user_name[0] if user_name else None
+
+# handle encryption keys
+
+def generate_encryption_key(key_type):
+    if key_type == "AES":
+        return os.urandom(32).hex()  # Generate a 256-bit AES key
+    # Add other key types if needed
+    return None
+
+def add_encryption_key(user_id, key_type, key_value):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO encryption_keys (user_id, key_type, key_value)
+        VALUES (?, ?, ?)
+    ''', (user_id, key_type, key_value))
+    conn.commit()
+    conn.close()
+
+def get_encryption_key(user_id, key_type):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT key_value FROM encryption_keys WHERE user_id = ? AND key_type = ?
+    ''', (user_id, key_type))
+    key = cursor.fetchone()
+    conn.close()
+    return key[0] if key else None
+
+
+def add_acl(user_id, resource, permission):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO acls (user_id, resource, permission)
+        VALUES (?, ?, ?)
+    ''', (user_id, resource, permission))
+    conn.commit()
+    conn.close()
+
+def get_acl(user_id, resource):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT permission FROM acls WHERE user_id = ? AND resource = ?
+    ''', (user_id, resource))
+    acl = cursor.fetchone()
+    conn.close()
+    return acl[0] if acl else None
+
+def check_permission(user_id, resource, required_permission):
+    permission = get_acl(user_id, resource)
+    return permission == required_permission

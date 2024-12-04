@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import add_secret, get_secret, get_all_secrets, delete_secret, log_activity, get_user_id_by_username
+from utils import add_secret, get_secret, get_all_secrets, delete_secret, log_activity, get_user_id_by_username, generate_encryption_key, add_encryption_key
 import pandas as pd
 
 # Function to navigate to a different page
@@ -34,6 +34,25 @@ def show_key_vault():
                 st.rerun()
             else:
                 st.error("Please enter both secret name and value.")
+
+    # Generate and store encryption key
+    st.subheader("Generate and Store Encryption Key")
+    with st.form(key="generate_key_form"):
+        key_type = st.selectbox("Select Key Type", ["AES"])
+        generate_key_button = st.form_submit_button("Generate Key")
+
+        if generate_key_button:
+            key_value = generate_encryption_key(key_type)
+            if key_value:
+                add_encryption_key(user_id, key_type, key_value)
+                add_secret(f"{key_type}_key", key_value, user_id)
+                st.success(f"{key_type} key generated and stored successfully.")
+                st.info(f"Your {key_type} key has been generated automatically and stored in the Key Vault for security purposes. You can view the key value in the Key Vault.")
+                # Log the generation of a new encryption key
+                log_activity(user_id, user_name, f"Generated {key_type} key")
+                st.rerun()
+            else:
+                st.error("Failed to generate encryption key.")
 
     # View all secrets
     st.subheader("View All Secrets")

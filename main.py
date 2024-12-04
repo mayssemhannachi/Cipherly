@@ -1,8 +1,7 @@
 import streamlit as st
 import os
 from dotenv import load_dotenv
-from utils import navigate_to, clear_cache  # Import navigation functions from utils
-
+from utils import navigate_to, add_acl, check_permission, get_user_id_by_username, log_activity
 # Load environment variables from .env file
 load_dotenv()
 
@@ -229,6 +228,53 @@ def show_main_page():
             if st.button('AES Encryption'):
                 if "user_role" not in st.session_state or st.session_state.user_role is None:
                     navigate_to('log_in_error_aes')
+
+        # Spacer to visually separate rows (optional)
+    st.markdown('<div style="margin-bottom: 0px;"></div>', unsafe_allow_html=True)
+    col1,col2,col3=st.columns([2,1,2])
+    
+    with col2:
+        st.markdown("""
+        <style>.element-container:has(#button-after) + div button {
+        position: relative;
+        background: transparent;
+        padding: 0.5rem 0.5rem;
+        font-size: 1rem;
+        border-top-left-radius: 255px 15px;
+        border-top-right-radius: 15px 225px;
+        border-bottom-right-radius: 225px 15px;
+        border-bottom-left-radius: 15px 255px;
+        pointer-events: auto; /* Make the button unclickable */
+        width:12rem;
+        left:60px;
+        }</style>""", unsafe_allow_html=True)
+        st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
+        if st.button("Go to Key Vault"):
+            navigate_to("key_vault")
+
+    # Informational message
+    st.subheader("Learn More About Caesar and AES Encryption")
+    st.write("Choose a document to download and learn more about the encryption algorithms.")
+
+    # List available documents
+    documents = os.listdir("documents")
+    document_name = st.selectbox("Select a document to download", documents)
+
+    # Download document
+    download_button = st.button("Download Document")
+
+    if download_button:
+        if document_name:
+            user_name = st.session_state.get('user_name', 'guest')
+            user_id = get_user_id_by_username(user_name)
+            if check_permission(user_id, document_name, "download"):
+                with open(f"documents/{document_name}", "rb") as f:
+                    st.download_button(label="Download", data=f, file_name=document_name)
+                log_activity(user_id, user_name, f"Downloaded document: {document_name}")
+            else:
+                st.error("You do not have permission to download this document.")
+        else:
+            st.error("Please select a document.")
 
 
         

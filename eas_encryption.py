@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 import os
 import sqlite3
 from datetime import datetime
-from utils import navigate_to
+from utils import navigate_to, get_user_id_by_username, get_encryption_key
 
 # AES Encryption Function
 def aes_encrypt(text, key):
@@ -51,17 +51,6 @@ def log_encryption_operation(user_id, encryption_type):
     conn.commit()
     conn.close()
 
-# Function to get user_id by user_name
-def get_user_id_by_name(user_name):
-    conn = sqlite3.connect("users.db")
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT id FROM users WHERE name = ?
-    ''', (user_name,))
-    user_id = cursor.fetchone()
-    conn.close()
-    return user_id[0] if user_id else None
-
 # Streamlit UI
 def show_aes_page():
     # Page styling
@@ -77,7 +66,7 @@ def show_aes_page():
 
     # Welcome header
     user_name = st.session_state.get('user_name', 'User')
-    user_id = get_user_id_by_name(user_name)  # Get user_id by user_name
+    user_id = get_user_id_by_username(user_name)  # Get user_id by user_name
     st.markdown(f'<div class="centered-text"><h1>Welcome, {user_name}!</h1></div>', unsafe_allow_html=True)
 
     # Page title
@@ -87,7 +76,6 @@ def show_aes_page():
     # AES Input form
     with st.form(key="aes_form"):
         text = st.text_area("Enter your text here:", "", help="Input the text you want to encrypt or decrypt.")
-        key = st.text_input("Enter a secret key (max 32 characters):", help="This key will be used for encryption and decryption.")
         operation = st.radio("Choose an operation:", ("Encrypt", "Decrypt"))
 
         # Submit button
@@ -95,21 +83,25 @@ def show_aes_page():
 
         # Process the operation
         if submitted:
-            if not text.strip() or not key.strip():
-                st.error("Both text and key are required.")
+            if not text.strip():
+                st.error("Text is required.")
             else:
                 try:
-                    if operation == "Encrypt":
-                        encrypted_data = aes_encrypt(text, key)
-                        st.success(f"Encrypted Data (Hex): {encrypted_data.hex()}")  # Show encrypted data in hex
-                        # Log the operation
-                        log_encryption_operation(user_id, "AES")
-                    else:  # Decrypt
-                        encrypted_bytes = bytes.fromhex(text)  # Convert hex input to bytes
-                        decrypted_text = aes_decrypt(encrypted_bytes, key)
-                        st.success(f"Decrypted Text: {decrypted_text}")
-                        # Log the operation
-                        log_encryption_operation(user_id, "AES")
+                    key = get_encryption_key(user_id, "AES")
+                    if not key:
+                        st.error("No AES key found. Please generate an AES key in the Key Vault.")
+                    else:
+                        if operation == "Encrypt":
+                            encrypted_data = aes_encrypt(text, key)
+                            st.success(f"Encrypted Data (Hex): {encrypted_data.hex()}")  # Show encrypted data in hex
+                            # Log the operation
+                            log_encryption_operation(user_id, "AES")
+                        else:  # Decrypt
+                            encrypted_bytes = bytes.fromhex(text)  # Convert hex input to bytes
+                            decrypted_text = aes_decrypt(encrypted_bytes, key)
+                            st.success(f"Decrypted Text: {decrypted_text}")
+                            # Log the operation
+                            log_encryption_operation(user_id, "AES")
                 except Exception as e:
                     st.error(f"Error: {e}")
 
@@ -118,3 +110,7 @@ def show_aes_page():
     if st.button("Try Another Encryption"):
         navigate_to("encryption")
     st.markdown('</div>', unsafe_allow_html=True)
+
+# Call the function to render the AES encryption page
+if __name__ == "__main__":
+    show_aes_page()

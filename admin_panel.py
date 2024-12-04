@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import plotly.express as px
+import os
 
 # Database connection
 def get_connection():
@@ -102,6 +103,17 @@ def delete_processed_requests_and_reset_id():
     conn.commit()
     conn.close()
 
+# Function to add ACL
+def add_acl(user_id, resource, permission):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO acls (user_id, resource, permission)
+        VALUES (?, ?, ?)
+    ''', (user_id, resource, permission))
+    conn.commit()
+    conn.close()
+
 # Admin Panel Page
 def show_admin_panel_page():
     st.success("Welcome Mayssem!")
@@ -109,7 +121,7 @@ def show_admin_panel_page():
 
     # Sidebar Navigation
     st.sidebar.title("Admin Dashboard")
-    section = st.sidebar.selectbox("Choose Section", ["Overview", "Users",  "Guests", "Encryption Algorithms", "Key Vault", "Logs"])
+    section = st.sidebar.selectbox("Choose Section", ["Overview", "Users",  "Guests", "Encryption Algorithms",  "Logs","Files and ACL"])
 
     # Example Queries (Replace with actual queries based on your schema)
     user_count_query = "SELECT COUNT(*) FROM users WHERE role = ?"
@@ -179,8 +191,6 @@ def show_admin_panel_page():
         encryption_usage_df = pd.DataFrame(list(encryption_usage.items()), columns=["Encryption Type", "Count"])
         fig = px.pie(encryption_usage_df, names="Encryption Type", values="Count", title="Encryption Types Distribution")
         st.plotly_chart(fig)
-    elif section == "Key Vault":
-        st.title("Key Vault Statistics")
     elif section == "Users":
         st.title("User Statistics")
 
@@ -273,6 +283,70 @@ def show_admin_panel_page():
         st.title("Application Logs")
         logs_df = pd.DataFrame(logs, columns=["User ID", "User Name", "Action", "Timestamp"])
         st.dataframe(logs_df)
+
+        # User Activity Over Time
+        st.subheader("User Activity Over Time")
+        logs_df['Timestamp'] = pd.to_datetime(logs_df['Timestamp'])
+        activity_over_time = logs_df.groupby(logs_df['Timestamp'].dt.date).size().reset_index(name='Count')
+        st.line_chart(activity_over_time.set_index('Timestamp'))
+
+        # Actions by User
+        st.subheader("Actions by User")
+        actions_by_user = logs_df['User Name'].value_counts().reset_index()
+        actions_by_user.columns = ['User Name', 'Count']
+        st.bar_chart(actions_by_user.set_index('User Name'))
+
+        # Action Types Distribution
+        st.subheader("Action Types Distribution")
+        action_types_distribution = logs_df['Action'].value_counts().reset_index()
+        action_types_distribution.columns = ['Action', 'Count']
+        fig = px.pie(action_types_distribution, names='Action', values='Count', title='Action Types Distribution')
+        st.plotly_chart(fig)
+
+        # Login Attempts
+        st.subheader("Login Attempts")
+        login_attempts = logs_df[logs_df['Action'].str.contains('login', case=False)]
+        login_attempts_count = login_attempts['Action'].value_counts().reset_index()
+        login_attempts_count.columns = ['Action', 'Count']
+        st.bar_chart(login_attempts_count.set_index('Action'))
+
+    elif section=="Files and ACL":
+        # Attach and Manage Document
+        st.subheader("Encryption Algorithms Documentation")
+        st.write("Upload a document to explain more about the encryption algorithms.")
+        
+        # Ensure the documents directory exists
+        if not os.path.exists("documents"):
+            os.makedirs("documents")
+        
+        # Upload document
+        uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt"])
+        if uploaded_file is not None:
+            with open(f"documents/{uploaded_file.name}", "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            st.success("File uploaded successfully.")
+
+        # Manage ACLs
+        st.subheader("Manage Access Control")
+        document_name = st.text_input("Enter the document name to manage access")
+        
+        # Fetch user emails from the database, excluding null emails
+        user_emails = fetch_data("SELECT email FROM users WHERE email IS NOT NULL")
+        user_email_list = [email[0] for email in user_emails]
+        
+        user_email = st.selectbox("Select a user to grant access", user_email_list)
+        grant_access_button = st.button("Grant Access")
+
+        if grant_access_button:
+            if document_name and user_email:
+                user_id = fetch_data("SELECT id FROM users WHERE email = ?", (user_email,))
+                if user_id:
+                    add_acl(user_id[0][0], document_name, "download")
+                    st.success(f"Access granted to {user_email} for document {document_name}.")
+                else:
+                    st.error("User not found.")
+            else:
+                st.error("Please enter both document name and user email.")
 
 # Call the function to render the admin page
 if __name__ == "__main__":
