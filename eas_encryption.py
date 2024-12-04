@@ -3,6 +3,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 import os
+import sqlite3
+from datetime import datetime
 from utils import navigate_to
 
 # AES Encryption Function
@@ -37,6 +39,29 @@ def aes_decrypt(encrypted_data, key):
     plaintext = unpadder.update(padded_data) + unpadder.finalize()
     return plaintext.decode()
 
+# Function to log encryption operations
+def log_encryption_operation(user_id, encryption_type):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute('''
+        INSERT INTO encryption_logs (encryption_type, user_id, timestamp)
+        VALUES (?, ?, ?)
+    ''', (encryption_type, user_id, timestamp))
+    conn.commit()
+    conn.close()
+
+# Function to get user_id by user_name
+def get_user_id_by_name(user_name):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id FROM users WHERE name = ?
+    ''', (user_name,))
+    user_id = cursor.fetchone()
+    conn.close()
+    return user_id[0] if user_id else None
+
 # Streamlit UI
 def show_aes_page():
     # Page styling
@@ -52,6 +77,7 @@ def show_aes_page():
 
     # Welcome header
     user_name = st.session_state.get('user_name', 'User')
+    user_id = get_user_id_by_name(user_name)  # Get user_id by user_name
     st.markdown(f'<div class="centered-text"><h1>Welcome, {user_name}!</h1></div>', unsafe_allow_html=True)
 
     # Page title
@@ -76,17 +102,19 @@ def show_aes_page():
                     if operation == "Encrypt":
                         encrypted_data = aes_encrypt(text, key)
                         st.success(f"Encrypted Data (Hex): {encrypted_data.hex()}")  # Show encrypted data in hex
+                        # Log the operation
+                        log_encryption_operation(user_id, "AES")
                     else:  # Decrypt
                         encrypted_bytes = bytes.fromhex(text)  # Convert hex input to bytes
                         decrypted_text = aes_decrypt(encrypted_bytes, key)
                         st.success(f"Decrypted Text: {decrypted_text}")
+                        # Log the operation
+                        log_encryption_operation(user_id, "AES")
                 except Exception as e:
                     st.error(f"Error: {e}")
 
     # Navigation Button
-    # Navigation Buttons
     st.markdown('<div class="button-container">', unsafe_allow_html=True)
     if st.button("Try Another Encryption"):
         navigate_to("encryption")
     st.markdown('</div>', unsafe_allow_html=True)
-

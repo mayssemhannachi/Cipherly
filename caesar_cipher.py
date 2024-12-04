@@ -1,5 +1,7 @@
 import streamlit as st
-from utils import navigate_to  # Ensure navigate_to is defined in your utils module
+import sqlite3
+from datetime import datetime
+from utils import log_activity, navigate_to  # Ensure navigate_to is defined in your utils module
 
 # Caesar cipher logic
 def caesar_cipher(text, shift, decrypt=False):
@@ -13,6 +15,18 @@ def caesar_cipher(text, shift, decrypt=False):
         else:
             result += char
     return result
+
+# Function to log encryption operations
+def log_encryption_operation(user_id, encryption_type):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute('''
+        INSERT INTO encryption_logs (encryption_type, user_id, timestamp)
+        VALUES (?, ?, ?)
+    ''', (encryption_type, user_id, timestamp))
+    conn.commit()
+    conn.close()
 
 def show_caesar_cipher():
     # Inline styles for the page
@@ -70,6 +84,7 @@ def show_caesar_cipher():
 
     # Display a personalized welcome message
     user_name = st.session_state.get('user_name', 'User')  # Default to 'User' if not found
+    user_id = st.session_state.get('user_id', 0)  # Default to 0 if not found
     st.markdown(f'<div class="centered-text"><h1>Welcome, {user_name}!</h1></div>', unsafe_allow_html=True)
 
     # Title for Caesar Cipher
@@ -92,6 +107,9 @@ def show_caesar_cipher():
                 is_decrypt = operation == "Decrypt"
                 result = caesar_cipher(text, shift, decrypt=is_decrypt)
                 st.success(f"Result: {result}")
+                # Log the operation
+                log_encryption_operation(user_id, "Caesar Cipher")
+                log_activity(user_id, user_name, f"Performed Caesar Cipher {'decryption' if is_decrypt else 'encryption'}")
 
     # Navigation Buttons
     st.markdown('<div class="button-container">', unsafe_allow_html=True)
