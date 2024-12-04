@@ -4,7 +4,7 @@ import sqlite3
 from captcha.image import ImageCaptcha
 import random, string
 import time
-from utils import log_activity  # Import the log_activity function
+from utils import log_activity,get_user_name_by_email  # Import the log_activity function
 
 def navigate_to(page):
     st.session_state.page = page
@@ -49,8 +49,9 @@ def log_activation_request(user_id, email):
         ''', (user_id, email))
         conn.commit()
         st.success("Activation request sent to admin.")
-        log_activity(user_id, email, "Requested account activation")  # Log the activation request
-    conn.close()
+
+        user_name = get_user_name_by_email(email)
+        log_activity(user_id[0], user_name, "Requested account activation")  # Log the activation request
 
 def show_log_in_page():
     st.markdown('<div class="centered-text" style="position: relative; top: 0px; left: 50px;"><h1>Log In</h1></div>', unsafe_allow_html=True)
@@ -131,10 +132,11 @@ def show_log_in_page():
                 cursor = conn.cursor()
                 cursor.execute('SELECT id FROM users WHERE email = ?', (email,))
                 user_id = cursor.fetchone()
+                user_name = get_user_name_by_email(email)
                 if user_id:
-                    log_activity(user_id[0], email, "Entered incorrect CAPTCHA")
+                    log_activity(user_id[0], user_name, "Entered incorrect CAPTCHA")
                 else:
-                    log_activity('guest', email, "Entered incorrect CAPTCHA")
+                    log_activity('guest', user_name, "Entered incorrect CAPTCHA")
                 conn.close()
                 
                 # Generate a new CAPTCHA and rerun the app
@@ -159,20 +161,24 @@ def show_log_in_page():
                                 st.session_state.user_name = result[1]  # Store the user's name in the session state
                                 st.session_state.logged_in = True  # Set the login status
                                 del st.session_state['Captcha']
-                                log_activity(result[0], result[1], "Successful login")  # Log the successful login
+                                user_name = get_user_name_by_email(email)
+                                log_activity(result[0], user_name, "Successful login")  # Log the successful login
                                 navigate_to("login_success")
                             else:
                                 st.session_state.inactive_user_id = result[0]
                                 st.session_state.inactive_user_email = email
                                 st.session_state.inactive_user = True
                                 st.error("Your account is inactive. Please contact support.")
-                                log_activity(result[0], result[1], "Attempted login with inactive account")  # Log the attempted login with inactive account
+                                user_name = get_user_name_by_email(email)
+                                log_activity(result[0], user_name, "Attempted login with inactive account")  # Log the attempted login with inactive account
                         else:
                             st.error("Invalid password.")
-                            log_activity(result[0], email, "Entered incorrect password")  # Log the incorrect password attempt
+                            user_name = get_user_name_by_email(email)
+                            log_activity(result[0], user_name, "Entered incorrect password")  # Log the incorrect password attempt
                     else:
                         st.error("Email address not found.")
-                        log_activity('guest', email, "Entered non-existent email")  # Log the non-existent email attempt
+                        
+                        log_activity('guest', 'guest', "Entered non-existent email")  # Log the non-existent email attempt
 
     # Display error if the previous CAPTCHA attempt was incorrect
     if (

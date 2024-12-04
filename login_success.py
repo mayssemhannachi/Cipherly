@@ -134,8 +134,29 @@ def encryption_show():
                 
                     navigate_to('eas_encryption')
 
-    if st.button("Go to Key Vault"):
+    # Spacer to visually separate rows (optional)
+    st.markdown('<div style="margin-bottom: 0px;"></div>', unsafe_allow_html=True)
+    col1,col2,col3=st.columns([2,1,2])
+    
+    with col2:
+        st.markdown("""
+        <style>.element-container:has(#button-after) + div button {
+        position: relative;
+        background: transparent;
+        padding: 0.5rem 0.5rem;
+        font-size: 1rem;
+        border-top-left-radius: 255px 15px;
+        border-top-right-radius: 15px 225px;
+        border-bottom-right-radius: 225px 15px;
+        border-bottom-left-radius: 15px 255px;
+        pointer-events: auto; /* Make the button unclickable */
+        width:12rem;
+        left:60px;
+        }</style>""", unsafe_allow_html=True)
+        st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
+        if st.button("Go to Key Vault"):
             navigate_to("key_vault")
+    
 
     # Display footer
     

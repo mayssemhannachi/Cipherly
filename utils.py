@@ -30,3 +30,62 @@ def log_activity(user_id, user_name, action):
     conn.commit()
     conn.close()
 
+# manage keyvault secretsimport sqlite3
+
+def add_secret(name, value, user_id):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO secrets (name, value, user_id)
+        VALUES (?, ?, ?)
+    ''', (name, value, user_id))
+    conn.commit()
+    conn.close()
+
+def get_secret(name, user_id):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT value FROM secrets WHERE name = ? AND user_id = ?
+    ''', (name, user_id))
+    secret = cursor.fetchone()
+    conn.close()
+    return secret[0] if secret else None
+
+def get_all_secrets(user_id):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('SELECT name, value FROM secrets WHERE user_id = ?', (user_id,))
+    secrets = cursor.fetchall()
+    conn.close()
+    return secrets
+
+def delete_secret(name, user_id):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM secrets WHERE name = ? AND user_id = ?', (name, user_id))
+    conn.commit()
+    conn.close()
+
+# function to retrieve user id using user name
+def get_user_id_by_username(username):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id FROM users WHERE name = ?
+    ''', (username,))
+    user_id = cursor.fetchone()
+    conn.close()
+    return user_id[0] if user_id else None
+
+# function to retrieve user name using user email
+
+def get_user_name_by_email(email):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT name FROM users WHERE email = ?
+    ''', (email,))
+    user_name = cursor.fetchone()
+    conn.close()
+    return user_name[0] if user_name else None

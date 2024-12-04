@@ -1,18 +1,14 @@
 import sqlite3
 
-def create_secrets_table():
+def alter_secrets_table():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS secrets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE,
-            value TEXT
-        )
+        ALTER TABLE secrets ADD COLUMN user_id INTEGER
     ''')
     conn.commit()
     conn.close()
 
-# Run the function to create the table
-create_secrets_table()
-print("Secrets table created successfully.")
+# Run the function to alter the table
+alter_secrets_table()
+print("Secrets table altered successfully.")
